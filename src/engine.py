@@ -1,11 +1,12 @@
 import torch
+from tqdm import tqdm
 def train_step(model, dataloader, optimizer, loss_fn, device):
     model.train()
     total_loss = 0.0
     correct = 0
     total = 0
 
-    for images, labels in dataloader:
+    for images, labels in tqdm(dataloader):
         images, labels = images.to(device), labels.to(device)
 
         optimizer.zero_grad()
@@ -32,7 +33,7 @@ def test_step(model, dataloader, loss_fn, device):
     total = 0
 
     with torch.inference_mode():
-        for images, labels in dataloader:
+        for images, labels in tqdm(dataloader):
             images, labels = images.to(device), labels.to(device)
 
             outputs = model(images)
@@ -43,6 +44,7 @@ def test_step(model, dataloader, loss_fn, device):
             predicted = torch.argmax(probabilities, dim=1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
+        
 
     avg_loss = total_loss / total
     accuracy = correct / total
