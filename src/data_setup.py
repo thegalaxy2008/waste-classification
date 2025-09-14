@@ -6,6 +6,7 @@ import utils
 from torch.utils.data import DataLoader
 from torchvision import datasets
 import torch
+from torch.utils.data import random_split
 
 
 def download_and_prepare_dataset():
@@ -92,23 +93,13 @@ def create_partial_data_loaders(train_dir, test_dir, transforms, batch_size, rat
         transform=transforms   
     )
     
-    # Calculate the number of samples for the partial dataset
-    num_samples = int(len(full_train_dataset) * ratio)
-    
-    # Randomly select indices for the partial dataset
-    indices = random.sample(range(len(full_train_dataset)), num_samples)
-    
     # Create a subset of the training dataset
-    partial_train_dataset = torch.utils.data.Subset(full_train_dataset, indices)
-    partial_test_dataset = torch.utils.data.Subset(full_test_dataset, indices)
-    
-    # Create test dataset
-    test_dataset = datasets.ImageFolder(
-        root=test_dir,
-        transform=transforms
-    )
-    
-    
+    partial_train_dataset = random_split(full_train_dataset, [ratio, 1 - ratio])[0]
+
+
+    # Create a subset of the test dataset
+    partial_test_dataset = random_split(full_test_dataset, [ratio, 1 - ratio])[0]
+ 
     # Create data loaders
     train_loader = DataLoader(
         partial_train_dataset,
@@ -117,10 +108,11 @@ def create_partial_data_loaders(train_dir, test_dir, transforms, batch_size, rat
     )
     
     test_loader = DataLoader(
-        test_dataset,
+        partial_test_dataset,
         batch_size=batch_size,
         shuffle=False
     )
+
     
     return train_loader, test_loader, full_train_dataset.classes
 
