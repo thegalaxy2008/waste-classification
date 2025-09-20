@@ -4,12 +4,16 @@ import os
 import random
 import utils
 from torch.utils.data import DataLoader
-from torchvision import datasets
+from torchvision import datasets, transforms
 import torch
-from torch.utils.data import random_split
+import pathlib
 
 
 def download_and_prepare_dataset():
+    """Download and prepare the garbage classification dataset.
+
+    """
+
     # Download latest version
     path = kagglehub.dataset_download("sumn2u/garbage-classification-v2")
     print("Path to dataset files:", path)
@@ -19,10 +23,10 @@ def download_and_prepare_dataset():
 
     # If the folder already exists, skip
     if os.path.exists(dest_folder):
-        print(f"Dataset already exists at '{dest_folder}'. Skipping download and preparation.")
+        print(
+            f"Dataset already exists at '{dest_folder}'. Skipping download and preparation."
+        )
         return
-    
-    
 
     os.makedirs(os.path.join(dest_folder, "train"), exist_ok=True)
     os.makedirs(os.path.join(dest_folder, "test"), exist_ok=True)
@@ -47,78 +51,97 @@ def download_and_prepare_dataset():
 
             # Copy train images
             for img in train_images:
-                shutil.copy2(os.path.join(class_path, img), os.path.join(train_class_dir, img))
+                shutil.copy2(
+                    os.path.join(class_path, img), os.path.join(train_class_dir, img)
+                )
 
             # Copy test images
             for img in test_images:
-                shutil.copy2(os.path.join(class_path, img), os.path.join(test_class_dir, img))
+                shutil.copy2(
+                    os.path.join(class_path, img), os.path.join(test_class_dir, img)
+                )
 
     print(f"Dataset split into train and test sets at '{dest_folder}'")
-def create_data_loaders(train_dir, test_dir, transforms, batch_size):
-        
+
+
+def create_data_loaders(
+    train_dir: pathlib.Path,
+    test_dir: pathlib.Path,
+    transforms: transforms.Compose,
+    batch_size: int,
+):
+    """
+    Creates data loaders for training and testing from image directories.
+
+    Args:
+        train_dir (pathlib.Path): Path to training data directory
+        test_dir (pathlib.Path): Path to test data directory
+        transforms (torchvision.transforms.Compose): Transforms to apply to the images
+        batch_size (int): Batch size for data loaders
+
+    Returns:
+        tuple[DataLoader, DataLoader, list[str]]: Train loader, test loader, and class names
+    """
     # Create training dataset
-    train_dataset = datasets.ImageFolder(
-        root=train_dir,
-        transform=transforms   
-    )
-    
+    train_dataset = datasets.ImageFolder(root=train_dir, transform=transforms)
+
     # Create test dataset
-    test_dataset = datasets.ImageFolder(
-        root=test_dir,
-        transform=transforms
-    )
-    
+    test_dataset = datasets.ImageFolder(root=test_dir, transform=transforms)
+
     # Create data loaders
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
-        shuffle=True,    
+        shuffle=True,
     )
-    
-    test_loader = DataLoader(
-        test_dataset,
-        batch_size=batch_size,
-        shuffle=False
-    )
+
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
     return train_loader, test_loader, train_dataset.classes
 
-def create_partial_data_loaders(train_dir, test_dir, transforms, batch_size, ratio=0.1):
-    # Create full training dataset
-    full_train_dataset = datasets.ImageFolder(
-        root=train_dir,
-        transform=transforms   
-    )
-    full_test_dataset = datasets.ImageFolder(
-        root=test_dir,
-        transform=transforms   
-    )
-    
-    # Create a subset of the training dataset
-    partial_train_dataset = random_split(full_train_dataset, [ratio, 1 - ratio])[0]
 
+def create_partial_data_loaders(
+    train_dir: pathlib.Path,
+    test_dir: pathlib.Path,
+    transforms: transforms.Compose,
+    batch_size: int,
+    ratio: float = 0.1,
+):
+    """
+    Creates data loaders for training and testing from image directories, using only a portion of the dataset.
+    Args:
+        train_dir (pathlib.Path): Path to training data directory
+        test_dir (pathlib.Path): Path to test data directory
+        transforms (torchvision.transforms.Compose): Transforms to apply to the images
+        batch_size (int): Batch size for data loaders
+        ratio (float): Ratio of the dataset to use (default: 0.1)
+    Returns:
+        tuple[DataLoader, DataLoader, list[str]]: Train loader, test loader, and class names
+    """
+    # Create full training dataset
+    full_train_dataset = datasets.ImageFolder(root=train_dir, transform=transforms)
+    full_test_dataset = datasets.ImageFolder(root=test_dir, transform=transforms)
+
+    # Create a subset of the training dataset
+    partial_train_dataset = torch.utils.data.random_split(
+        full_train_dataset, [ratio, 1 - ratio]
+    )[0]
 
     # Create a subset of the test dataset
-    partial_test_dataset = random_split(full_test_dataset, [ratio, 1 - ratio])[0]
- 
+    partial_test_dataset = torch.utils.data.random_split(
+        full_test_dataset, [ratio, 1 - ratio]
+    )[0]
+
     # Create data loaders
     train_loader = DataLoader(
         partial_train_dataset,
         batch_size=batch_size,
-        shuffle=True,    
-    )
-    
-    test_loader = DataLoader(
-        partial_test_dataset,
-        batch_size=batch_size,
-        shuffle=False
+        shuffle=True,
     )
 
-    
+    test_loader = DataLoader(partial_test_dataset, batch_size=batch_size, shuffle=False)
+
     return train_loader, test_loader, full_train_dataset.classes
-
 
 
 if __name__ == "__main__":
     download_and_prepare_dataset()
-
-

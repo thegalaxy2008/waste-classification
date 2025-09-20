@@ -1,6 +1,20 @@
 import torch
 from tqdm import tqdm
-def train_step(model, dataloader, optimizer, loss_fn, device):
+
+def train_step(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, optimizer: torch.optim.Optimizer, loss_fn: torch.nn.Module, device: torch.device) -> tuple[float, float]:
+    """To perform a single train step in a training process
+
+    Args:
+        model (torch.nn.Module): model to train
+        dataloader (torch.utils.data.DataLoader): dataloader for training data
+        optimizer (torch.optim.Optimizer): optimizer for model parameters
+        loss_fn (torch.nn.Module): loss function to optimize
+        device (torch.device): device to perform training on (CPU or GPU)
+
+    Returns:
+        tuple[float, float]: average loss and accuracy for the training step
+    """
+
     model.train()
     total_loss = 0.0
     correct = 0
@@ -26,7 +40,18 @@ def train_step(model, dataloader, optimizer, loss_fn, device):
     return avg_loss, accuracy
 
 
-def test_step(model, dataloader, loss_fn, device):
+def test_step(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, loss_fn: torch.nn.Module, device: torch.device):
+    """Summary: To perform a single test step in a training process
+
+    Args:
+        model (torch.nn.Module): model to evaluate
+        dataloader (torch.utils.data.DataLoader): dataloader for test data
+        loss_fn (torch.nn.Module): loss function to optimize
+        device (torch.device): which device to perform testing on (CPU or GPU)
+
+    Returns:
+        tuple[float, float]: average loss and accuracy for the test step
+    """
     model.eval()
     total_loss = 0.0
     correct = 0
@@ -50,7 +75,27 @@ def test_step(model, dataloader, loss_fn, device):
     accuracy = correct / total
     return avg_loss, accuracy
 
-def train(model, train_loader, test_loader, optimizer, loss_fn, device, epochs):
+def train(model: torch.nn.Module,
+          train_loader: torch.utils.data.DataLoader,
+          test_loader: torch.utils.data.DataLoader,
+          optimizer: torch.optim.Optimizer,
+          loss_fn: torch.nn.Module,
+          device: torch.device,
+          epochs: int):
+    """Train and evaluate a model for a number of epochs
+
+    Args:
+        model (torch.nn.Module): model to train
+        train_loader (torch.utils.data.DataLoader): dataloader for training data
+        test_loader (torch.utils.data.DataLoader): dataloader for test data
+        optimizer (torch.optim.Optimizer): optimizer for model parameters
+        loss_fn (torch.nn.Module): loss function to optimize
+        device (torch.device): which device to perform training on
+        epochs (int): number of epochs to train for
+
+    Returns:
+        dict: a dictionary containing the training history
+    """
     history = {
         "train_loss": [],
         "train_acc": [],
