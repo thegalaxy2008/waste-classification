@@ -15,6 +15,8 @@ from models.resnet_50 import create_resnet_50_model
 import torchvision
 from models.efficient_net import create_efficient_net_model
 from models.mobile_netv2 import create_mobile_netv2_model
+from datetime import datetime
+from torch.utils.tensorboard import SummaryWriter
 class CliArgs(Tap):
     """Command line arguments for training a model.
 
@@ -24,7 +26,7 @@ class CliArgs(Tap):
     
     model_name: str 
     batch_size: int = 32
-    epochs: int = 5
+    epochs: int
     learning_rate: float = 0.001
     random_seed: int = 42
     data_ratio: float = 0.1
@@ -87,10 +89,15 @@ def main(args: CliArgs):
     loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
+    log_dir = f"runs/{args.model_name}_{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+    writer = SummaryWriter(log_dir=log_dir)
+
+
     # Train the model
-    train(model, train_loader, test_loader, optimizer, loss_fn, device = device, epochs=args.epochs)
+    train(model, train_loader, test_loader, optimizer, loss_fn, device = device, epochs=args.epochs, writer = writer)
     torch.save(model.state_dict(), f"{args.model_name}_model.pth")
     print(f"Model saved to {args.model_name}_model.pth")
+    writer.close()
     
 
 

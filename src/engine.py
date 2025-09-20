@@ -1,6 +1,6 @@
 import torch
 from tqdm import tqdm
-
+from torch.utils.tensorboard import SummaryWriter
 def train_step(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, optimizer: torch.optim.Optimizer, loss_fn: torch.nn.Module, device: torch.device) -> tuple[float, float]:
     """To perform a single train step in a training process
 
@@ -81,7 +81,7 @@ def train(model: torch.nn.Module,
           optimizer: torch.optim.Optimizer,
           loss_fn: torch.nn.Module,
           device: torch.device,
-          epochs: int):
+          epochs: int, writer: SummaryWriter) -> dict:
     """Train and evaluate a model for a number of epochs
 
     Args:
@@ -92,6 +92,7 @@ def train(model: torch.nn.Module,
         loss_fn (torch.nn.Module): loss function to optimize
         device (torch.device): which device to perform training on
         epochs (int): number of epochs to train for
+        writer (SummaryWriter): TensorBoard SummaryWriter for saving logs
 
     Returns:
         dict: a dictionary containing the training history
@@ -115,5 +116,10 @@ def train(model: torch.nn.Module,
         print(f"Epoch {epoch+1}/{epochs} | "
               f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f} | "
               f"Test Loss: {test_loss:.4f}, Test Acc: {test_acc:.4f}")
+        
+        writer.add_scalar('Loss/Train', train_loss, epoch)
+        writer.add_scalar('Loss/Test', test_loss, epoch)
+        writer.add_scalar('Accuracy/Train', train_acc, epoch)
+        writer.add_scalar('Accuracy/Test', test_acc, epoch)
 
     return history  
