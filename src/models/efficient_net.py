@@ -8,5 +8,6 @@ def create_efficient_net_model(num_classes:int):
     for param in model.parameters():
         param.requires_grad = False
 
-    model.classifier = torch.nn.Linear(in_features=1408, out_features=num_classes)
+    model.classifier = torch.nn.Sequential(torch.nn.Dropout(p=0.3, inplace=True),
+                                           torch.nn.Linear(in_features=1408, out_features=num_classes))
     return model
