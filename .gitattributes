@@ -1,1 +1,2 @@
 *.pth filter=lfs diff=lfs merge=lfs -text
+ResNet50_model1.pth[[:space:]]5[[:space:]]epochs,[[:space:]]0.001[[:space:]]lr,[[:space:]]32[[:space:]]batch[[:space:]]size,[[:space:]]0.1[[:space:]]data[[:space:]]ratio filter=lfs diff=lfs merge=lfs -text
