@@ -12,10 +12,10 @@ import os
 class_names = ['battery', 'biological', 'cardboard', 'clothes', 'glass', 'metal', 'paper', 'plastic', 'shoes', 'trash']
 class_names_2 = ['organic','recycleable']
 model = create_resnet_50_model(num_classes=len(class_names))
-model.load_state_dict(torch.load('c:/Users/admin/Desktop/classification pj/ResNet50_model.pth', weights_only=True))
+model.load_state_dict(torch.load(os.path.join(get_cwd(), 'ResNet50_model.pth'), weights_only=True))
 model.eval()
 model_2 = create_resnet_50_model(num_classes=len(class_names_2))
-model_2.load_state_dict(torch.load('c:/Users/admin/Desktop/classification pj/ResNet50_model1.pth - 5 epochs, 0.001 lr, 32 batch size, 0.1 data ratio', weights_only=True))
+model_2.load_state_dict(torch.load(os.path.join(get_cwd(), 'ResNet50_model1.pth - 5 epochs, 0.001 lr, 32 batch size, 0.1 data ratio'), weights_only=True))
 model_2.eval()
 weights = torchvision.models.ResNet50_Weights.DEFAULT
 transform = weights.transforms()

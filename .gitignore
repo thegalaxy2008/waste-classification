@@ -1,3 +1,5 @@
-
-dataset/garbage-dataset/
+# Ignore dataset files
+dataset/**
+# Do not ignore examples
+!dataset/examples 
 __pycache__/
